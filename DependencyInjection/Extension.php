@@ -7,12 +7,27 @@ use \Symfony\Component\DependencyInjection\ContainerBuilder;
 use \event_dispatcher\DependencyInjection\Compiler\RegisterKernelListenersPass;
 use \Symfony\Component\Config\FileLocator;
 use \Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use \dependency_injection\DependencyInjection\CompilerPassDataInterface;
 
 /**
  * @author Masich Ivan <john@masich.com>
  */
-class Extension extends BaseExtension
+class Extension extends BaseExtension implements CompilerPassDataInterface
 {
+    /**
+     * @var array
+     */
+    private $compilerPassData;
+    
+    public function __construct()
+    {
+        $this->setCompilerPassData(
+            array(
+                new RegisterKernelListenersPass()
+            )
+        );
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -21,8 +36,6 @@ class Extension extends BaseExtension
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../config'));
 
         $loader->load('services.xml');
-
-        $container->addCompilerPass(new RegisterKernelListenersPass());
     }
 
     /**
@@ -31,5 +44,21 @@ class Extension extends BaseExtension
     function getAlias()
     {
         return 'event_dispatcher';
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setCompilerPassData(array $objects)
+    {
+        $this->compilerPassData = $objects;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getCompilerPassData()
+    {
+        return $this->compilerPassData;
     }
 }
